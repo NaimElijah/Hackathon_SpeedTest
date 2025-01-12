@@ -11,6 +11,8 @@ class SpeedTestClient:
     TYPE_OFFER = 0x2
     TYPE_REQUEST = 0x3
     TYPE_PAYLOAD = 0x4
+    RECIEVE_SIZE = 1024
+    Payload_Packet_Header_Size = 21
 
     def __init__(self):
         self.server_ip = None
@@ -35,7 +37,7 @@ class SpeedTestClient:
             
             while True:
                 try:
-                    data, addr = sock.recvfrom(1024)
+                    data, addr = sock.recvfrom(self.RECIEVE_SIZE)
                     magic_cookie, message_type, udp_port, tcp_port = struct.unpack("!IBHH", data)
                     if magic_cookie == self.MAGIC_COOKIE and message_type == self.TYPE_OFFER:
                         self.server_ip = addr[0]
@@ -60,9 +62,9 @@ class SpeedTestClient:
 
                 while current_segment < total_expected_segments:
                     self.print_safe(f"{bcolors.BLUE}receiving data{bcolors.ENDC}")
-                    data = sock.recv(self.file_size + 21)
+                    data = sock.recv(self.file_size + self.Payload_Packet_Header_Size)
                     self.print_safe(f"{bcolors.BLUE}data received{bcolors.ENDC}")
-                    (magic, msg_type, total_segments, current_received_segment) = struct.unpack('!IBQQ', data[0:21])
+                    (magic, msg_type, total_segments, current_received_segment) = struct.unpack('!IBQQ', data[0:self.Payload_Packet_Header_Size])
 
                     if magic != self.MAGIC_COOKIE or msg_type != self.TYPE_PAYLOAD:
                         raise ValueError(f"{bcolors.UNDERLINE}{bcolors.RED}{bcolors.BOLD}Invalid Paylaod received - magic or type error{bcolors.ENDC}")
@@ -72,9 +74,9 @@ class SpeedTestClient:
                     
                     current_segment = current_received_segment
                     
-                    if not data[21:]:
+                    if not data[self.Payload_Packet_Header_Size:]:
                         break
-                    bytes_received += len(data[21:])
+                    bytes_received += len(data[self.Payload_Packet_Header_Size:])
                 
                 elapsed_time = time.time() - start_time
                 if elapsed_time == 0:
@@ -104,7 +106,7 @@ class SpeedTestClient:
                     while current_segment < total_expected_segments:
                         data, _ = sock.recvfrom(4096)  # generally, our server sends 1024+21 each packet
                         packets_total += 1
-                        magic_cookie, message_type, total_segments, current_received_segment = struct.unpack("!IBQQ", data[:21])
+                        magic_cookie, message_type, total_segments, current_received_segment = struct.unpack("!IBQQ", data[:self.Payload_Packet_Header_Size])
                         if magic_cookie != self.MAGIC_COOKIE or message_type != self.TYPE_PAYLOAD:
                             raise ValueError(f"{bcolors.UNDERLINE}{bcolors.RED}{bcolors.BOLD}Invalid Paylaod received{bcolors.ENDC}")
                     
@@ -121,9 +123,9 @@ class SpeedTestClient:
                 
                 elapsed_time = time.time() - start_time
                 if elapsed_time == 0:
-                    speed = (packets_received * 8 * 1024)  # so we won't get division by 0 error
+                    speed = (packets_received * 8 * self.RECIEVE_SIZE)  # so we won't get division by 0 error
                 else:
-                    speed = (packets_received * 8 * 1024) / elapsed_time  # Speed in bits/second
+                    speed = (packets_received * 8 * self.RECIEVE_SIZE) / elapsed_time  # Speed in bits/second
                 packet_loss = 100 - (packets_received / packets_total * 100 if packets_total > 0 else 0)
                 self.print_safe(f"{bcolors.GREEN}UDP transfer #{connection_id} finished, total time: {elapsed_time:.2f} seconds, total speed: {speed:.2f} bits/second, percentage of packets received successfully: {100 - packet_loss:.2f}%{bcolors.ENDC}")
         except (ConnectionResetError, socket.error) as e:
