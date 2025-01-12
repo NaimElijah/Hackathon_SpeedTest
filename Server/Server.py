@@ -1,4 +1,6 @@
-import threading, time, struct, sys, random, socket, psutil
+import threading, time, struct, sys, random, socket, psutil, os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from colors import bcolors
 
 #*                ====================>>>>            Team Name:  "The Speed Testing Association"            <<<<====================
 
@@ -139,6 +141,7 @@ class SpeedTestServer:
 
 
 if __name__ == "__main__":
+    print(f"{bcolors.OKBLUE}Server is starting...{bcolors.ENDC}")     #   <<<================================== tteestt
     server = SpeedTestServer()
     try:
         server.run()
