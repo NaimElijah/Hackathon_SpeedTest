@@ -30,8 +30,8 @@ class SpeedTestClient:
 
     def listen_for_offers(self):
         with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
-            sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)  # maybe REUSEPORT
-            sock.bind(("", self.BROADCAST_PORT))  # Bind to UDP port 13117
+            sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            sock.bind(("", self.BROADCAST_PORT))
             print(f"{bcolors.BLUE}Client started, listening for offer requests..{bcolors.ENDC}.")
             
             while True:

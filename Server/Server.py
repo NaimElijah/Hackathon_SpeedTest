@@ -109,7 +109,6 @@ class SpeedTestServer:
 
 
     def listen_for_TCP(self):
-        # local_ip, _ = self.get_local_ip()
         tcp_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         tcp_sock.bind(("", self.tcp_port))
         while self.running:
@@ -130,7 +129,6 @@ class SpeedTestServer:
             return "127.0.0.1", "0"
     
     def listen_for_UDP(self):
-        # local_ip, _ = self.get_local_ip()
         udp_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         udp_sock.bind(("", self.udp_port))
         while self.running:
