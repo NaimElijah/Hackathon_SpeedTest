@@ -2,7 +2,7 @@ import threading, time, struct, sys, socket, os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from Colors import bcolors
 
-#*                    ====================>>>>            Team Name:  "Ping Floyd", "ACK/DC"               <<<<====================
+#*                    ====================>>>>            Team Name:  "Ping Floyd"             <<<<====================
 stdout_lock = threading.Lock()
 
 class SpeedTestClient:

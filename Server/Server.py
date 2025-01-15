@@ -2,7 +2,7 @@ import threading, time, struct, sys, random, socket, psutil, os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from Colors import bcolors
 
-#*                    ====================>>>>            Team Name:  "Ping Floyd", "ACK/DC"               <<<<====================
+#*                    ====================>>>>            Team Name:  "Ping Floyd"              <<<<====================
 stdout_lock = threading.Lock()
 
 class SpeedTestServer:
@@ -17,6 +17,7 @@ class SpeedTestServer:
         self.running = True
         self.broadcast_port = 13117
         self.udp_lock = threading.Lock()
+        self.local_ip = 0
 
     def print_safe(self, message):
         with stdout_lock:
@@ -34,8 +35,10 @@ class SpeedTestServer:
     def send_offers(self):
         """Send periodic UDP offer messages to announce server availability."""
         with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
-            sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-            self.print_safe(f"{bcolors.BLUE}Server started, listening on Ip address {self.get_ip_address('Wi-Fi')} {bcolors.ENDC}")
+            self.local_ip, _ = self.get_local_ip()
+            sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1) 
+            sock.bind((self.local_ip, self.broadcast_port))
+            self.print_safe(f"{bcolors.BLUE}Server started, listening on Ip address {self.local_ip} {bcolors.ENDC}")
             
             offer_packet = struct.pack("!IBHH", self.MAGIC_COOKIE, self.TYPE_OFFER, self.udp_port, self.tcp_port)
             
@@ -106,6 +109,7 @@ class SpeedTestServer:
 
 
     def listen_for_TCP(self):
+        # local_ip, _ = self.get_local_ip()
         tcp_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         tcp_sock.bind(("", self.tcp_port))
         while self.running:
@@ -113,8 +117,20 @@ class SpeedTestServer:
             tcp_sock.listen()
             self.accept_tcp_requests(tcp_sock)
     
+
+    def get_local_ip(self) -> tuple[str, str]:
+        try:
+            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            # This IP/port doesn't need to be reachable; we just want to force the OS to give us a default IP
+            s.connect(("8.8.8.8", 80))
+            ip, port = s.getsockname()
+            s.close()
+            return ip, port
+        except Exception:
+            return "127.0.0.1", "0"
     
     def listen_for_UDP(self):
+        # local_ip, _ = self.get_local_ip()
         udp_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         udp_sock.bind(("", self.udp_port))
         while self.running:
