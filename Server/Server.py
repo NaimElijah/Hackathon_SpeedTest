@@ -35,7 +35,7 @@ class SpeedTestServer:
         """Send periodic UDP offer messages to announce server availability."""
         with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
             sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-            self.print_safe(f"{bcolors.BLUE}Server started, listening on Ip address {self.get_ip_address('Ethernet 4')} {bcolors.ENDC}")
+            self.print_safe(f"{bcolors.BLUE}Server started, listening on Ip address {self.get_ip_address('Wi-Fi')} {bcolors.ENDC}")
             
             offer_packet = struct.pack("!IBHH", self.MAGIC_COOKIE, self.TYPE_OFFER, self.udp_port, self.tcp_port)
             
@@ -54,7 +54,7 @@ class SpeedTestServer:
             self.print_safe(f"{bcolors.GREEN}TCP request from {addr}, file size: {file_size} bytes{bcolors.ENDC}")
 
             # Simulate sending the file
-            payload_msg = struct.pack("!IBQQ", self.MAGIC_COOKIE, self.TYPE_PAYLOAD, 1, 1) + b"x" * file_size # TODO: fix in client and server
+            payload_msg = struct.pack("!IBQQ", self.MAGIC_COOKIE, self.TYPE_PAYLOAD, 1, 1) + b"x" * file_size
            
             conn.send(payload_msg)
 
